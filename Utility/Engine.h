@@ -9,3 +9,4 @@
 #include "Engine/KeyCombo.h"
 #include "Engine/ActiveOption.h"
 #include "Engine/VectorOption.h"
+#include "Engine/FastHook.h"

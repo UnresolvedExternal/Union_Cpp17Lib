@@ -9,11 +9,11 @@ namespace NAMESPACE
 			parser->GetParameter(arg);
 			return arg;
 		}
-		else if constexpr (std::is_same_v<T, bool>)
+		else if constexpr (std::is_same_v<T, bool> || std::is_same_v<T, unsigned>)
 		{
 			int arg;
 			parser->GetParameter(arg);
-			return arg;
+			return static_cast<T>(arg);
 		}
 		else if constexpr (std::is_same_v<T, zSTRING> || std::is_same_v<T, string>)
 		{
@@ -48,10 +48,16 @@ namespace NAMESPACE
 			static_assert(false, "Wrong type");
 	}
 
-	template <class ...TArgs>
-	void PopArguments(zCParser* parser, TArgs&... args)
+	void PopArguments(zCParser* parser)
 	{
-		((args = PopArgument<TArgs>(parser)), ...);
+
+	}
+
+	template <class THead, class ...TTail>
+	void PopArguments(zCParser* parser, THead& head, TTail&... tail)
+	{
+		PopArguments(parser, tail...);
+		head = PopArgument<THead>(parser);
 	}
 
 #define ZARGS(...) PopArguments(zCParser::GetParser(), __VA_ARGS__)
@@ -97,8 +103,8 @@ namespace NAMESPACE
 	template <class T> 
 	void PushArgument(zCParser* parser, const T& arg, int argSymbol = -1)
 	{
-		if constexpr (std::is_same_v<T, int> || std::is_same_v<T, bool>)
-			parser->SetReturn((int)arg);
+		if constexpr (std::is_same_v<T, int> || std::is_same_v<T, bool> || std::is_same_v<T, unsigned>)
+			parser->SetReturn(static_cast<int>(arg));
 		else if constexpr (std::is_same_v<T, float>)
 			parser->SetReturn(arg);
 		else if constexpr (std::is_convertible_v<T, const char*>)
@@ -164,6 +170,8 @@ namespace NAMESPACE
 	{
 		if constexpr (std::is_same_v<T, int> || std::is_same_v<T, bool>)
 			return zPAR_TYPE_INT;
+		else if constexpr (std::is_same_v<T, unsigned>)
+			return zPAR_TYPE_FUNC;
 		else if constexpr (std::is_same_v<T, float>)
 			return zPAR_TYPE_FLOAT;
 		else if constexpr (std::is_same_v<T, zSTRING> || std::is_same_v<T, string> || std::is_same_v<T, const char*>)

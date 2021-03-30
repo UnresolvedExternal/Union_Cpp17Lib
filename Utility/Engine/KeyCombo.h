@@ -105,6 +105,12 @@ namespace NAMESPACE
 			Build(combos);
 		}
 
+		KeyCombo(std::initializer_list<int> combo) :
+			KeyCombo({ combo })
+		{
+
+		}
+
 		KeyCombo(const std::initializer_list<std::initializer_list<int>>& combos)
 		{
 			std::vector<std::vector<int>> vCombos;

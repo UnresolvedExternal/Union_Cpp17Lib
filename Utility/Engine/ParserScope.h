@@ -15,9 +15,11 @@ namespace NAMESPACE
 			if (parser == ::NAMESPACE::parser)
 			{
 				std::vector<string> names = { "SELF", "OTHER", "VICTIM", "ITEM" };
+				
 				for (const string& name : names)
 				{
 					zCPar_Symbol* symbol = parser->GetSymbol(name);
+					
 					if (symbol)
 						symbols.push_back(VarScope<int>(symbol->offset));
 				}
