@@ -54,7 +54,10 @@ namespace NAMESPACE
 			}
 
 			entry->ccbList.InsertEnd(&ActiveOptionBase::ChangeCallback);
+
+			inLoad = true;
 			ChangeEntry(entry->varValueTemp.Length() ? entry->varValueTemp : defaultValue, true);
+			inLoad = false;
 		}
 
 		void Propagate()
@@ -64,6 +67,8 @@ namespace NAMESPACE
 		}
 
 	protected:
+		static bool inLoad;
+
 		virtual void HandleValueChanged(const string& newValue) = 0;
 
 		void ChangeEntry(const string& newValue, bool propagate)
@@ -119,6 +124,7 @@ namespace NAMESPACE
 
 	// define static before the first use to get rid on destruction order
 	std::vector<ActiveOptionBase*> ActiveOptionBase::options;
+	bool ActiveOptionBase::inLoad = false;
 
 	template <class T>
 	class ActiveOption : public ActiveOptionBase
@@ -129,7 +135,7 @@ namespace NAMESPACE
 	protected:
 		void SetValue(const T& newValue, bool propagate)
 		{
-			if (newValue == value)
+			if (newValue == value && !inLoad)
 				return;
 
 			ChangeEntry(StdToString<T>(newValue), propagate);
