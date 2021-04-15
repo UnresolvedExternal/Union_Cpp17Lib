@@ -23,7 +23,36 @@ namespace NAMESPACE
 		void Subscribe()
 		{
 			zCOptionSection* section = option->GetSectionByName(sectionName, true);
-			entry = option->GetEntryByName(section, entryName, true);
+			entry = option->GetEntryByName(section, entryName, false);
+
+			if (!entry)
+			{
+				const bool hasTrivia = !startTrivia.empty() || !endTrivia.empty();
+				const bool addEmptyLines = hasTrivia && automaticallyAddEmptyLines;
+				zCOptionEntry* lastEntry = section->entryList.IsEmpty() ? nullptr : section->entryList[section->entryList.GetNum() - 1];
+				
+				if (addEmptyLines && (!lastEntry || !lastEntry->varName.IsEmpty()))
+					section->entryList.InsertEnd(new zCOptionEntry{ "", "\r\n" });
+				
+				for (const string& trivia : startTrivia)
+				{
+					string trash = trivia.IsEmpty() ? "\r\n" : (A"; " + trivia + "\r\n");
+					section->entryList.InsertEnd(new zCOptionEntry{ "", trash });
+				}
+
+				entry = new zCOptionEntry{ entryName, "" };
+				section->entryList.InsertEnd(entry);
+
+				for (const string& trivia : endTrivia)
+				{
+					string trash = trivia.IsEmpty() ? "\r\n" : (A"; " + trivia + "\r\n");
+					section->entryList.InsertEnd(new zCOptionEntry{ "", trash });
+				}
+
+				if (addEmptyLines)
+					section->entryList.InsertEnd(new zCOptionEntry{ "", "\r\n" });
+			}
+
 			entry->ccbList.InsertEnd(&ActiveOptionBase::ChangeCallback);
 			ChangeEntry(entry->varValueTemp.Length() ? entry->varValueTemp : defaultValue, true);
 		}
@@ -50,7 +79,8 @@ namespace NAMESPACE
 			entry{ nullptr },
 			sectionName{ sectionName },
 			entryName{ entryName },
-			defaultValue{ defaultValue }
+			defaultValue{ defaultValue },
+			automaticallyAddEmptyLines{ true }
 		{
 			options.push_back(this);
 		}
@@ -60,7 +90,8 @@ namespace NAMESPACE
 			entry{ std::move(right.entry) },
 			entryName{ std::move(right.entryName) },
 			sectionName{ std::move(right.sectionName) },
-			defaultValue{ std::move(right.defaultValue) }
+			defaultValue{ std::move(right.defaultValue) },
+			automaticallyAddEmptyLines{ std::move(right.automaticallyAddEmptyLines) }
 		{
 			auto it = std::find(begin(options), end(options), &right);
 			*it = this;
@@ -80,13 +111,17 @@ namespace NAMESPACE
 			for (ActiveOptionBase* option : options)
 				option->Subscribe();
 		}
+
+		std::vector<string> startTrivia;
+		std::vector<string> endTrivia;
+		bool automaticallyAddEmptyLines;
 	};
 
 	// define static before the first use to get rid on destruction order
 	std::vector<ActiveOptionBase*> ActiveOptionBase::options;
 
 	template <class T>
-	class ActiveOption : ActiveOptionBase
+	class ActiveOption : public ActiveOptionBase
 	{
 	private:
 		T value;
