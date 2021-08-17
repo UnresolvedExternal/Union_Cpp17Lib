@@ -181,4 +181,116 @@ namespace NAMESPACE
 	{
 		return InventoryIterator(nullptr);
 	}
+
+	template <class T>
+	struct TreeIterator
+	{
+	private:
+		zCTree<T>* node;
+
+	public:
+		typedef TreeIterator self_type;
+		typedef zCVob* value_type;
+		typedef zCVob*& reference;
+		typedef zCVob** pointer;
+		typedef std::input_iterator_tag iterator_category;
+
+		TreeIterator(zCTree<T>* tree) :
+			node{ tree }
+		{
+
+		}
+
+		TreeIterator(const TreeIterator&) = default;
+		TreeIterator(TreeIterator&&) = default;
+		TreeIterator& operator=(const TreeIterator&) = default;
+		TreeIterator& operator=(TreeIterator&&) = default;
+
+		self_type& operator++()
+		{
+			if (node->GetFirstChild())
+			{
+				node = node->GetFirstChild();
+				return *this;
+			}
+
+			if (node->GetNextChild())
+			{
+				node = node->GetNextChild();
+				return *this;
+			}
+
+			while (node = node->GetParent())
+				if (node->GetNextChild())
+				{
+					node = node->GetNextChild();
+					return *this;
+				}
+
+			return *this;
+		}
+
+		self_type operator++(int junk)
+		{
+			self_type backup = *this;
+			++* this;
+			return backup;
+		}
+
+		value_type operator*()
+		{
+			return node->GetData();
+		}
+
+		bool operator==(const self_type& right)
+		{
+			return node == right.node;
+		}
+
+		bool operator!=(const self_type& right)
+		{
+			return node != right.node;
+		}
+
+		zCTree<T>* GetNode()
+		{
+			return node;
+		}
+	};
+
+	template <class T>
+	TreeIterator<T> begin(zCTree<T>& root)
+	{
+		return TreeIterator<T>{ &root };
+	}
+
+	template <class T>
+	TreeIterator<T> end(zCTree<T>& root)
+	{
+		if (root.GetNextChild())
+			return TreeIterator<T>{ root.GetNextChild() };
+
+		zCTree<T>* node = &root;
+
+		while (node = node->GetParent())
+			if (node->GetNextChild())
+				return TreeIterator<T>{ node->GetNextChild() };
+
+		return TreeIterator<T>{ nullptr };
+	}
+
+	template <class T>
+	TreeIterator<T> begin(zCTree<T>* root)
+	{
+		return TreeIterator<T>(root);
+	}
+
+	template <class T>
+	TreeIterator<T> end(zCTree<T>* root)
+	{
+		if (!root)
+			return TreeIterator<T>{ nullptr };
+
+		return end(*root);
+	}
 }

@@ -12,7 +12,7 @@ namespace NAMESPACE
 
 		operator bool() const
 		{
-			return !empty();
+			return !this->empty();
 		}
 
 		VectorOption(const std::initializer_list<T>& values)
@@ -25,10 +25,10 @@ namespace NAMESPACE
 
 		bool operator==(const VectorOption& right) const
 		{
-			if (size() != right.size())
+			if (this->size() != right.size())
 				return false;
 
-			for (size_t i = 0; i < size(); i++)
+			for (size_t i = 0; i < this->size(); i++)
 				if ((*this)[i] != right[i])
 					return false;
 

@@ -36,7 +36,7 @@ namespace NAMESPACE
 				
 				for (const string& trivia : startTrivia)
 				{
-					string trash = trivia.IsEmpty() ? "\r\n" : (A"; " + trivia + "\r\n");
+					string trash = trivia.IsEmpty() ? A"\r\n" : (A"; " + trivia + "\r\n");
 					section->entryList.InsertEnd(new zCOptionEntry{ "", trash });
 				}
 
@@ -45,7 +45,7 @@ namespace NAMESPACE
 
 				for (const string& trivia : endTrivia)
 				{
-					string trash = trivia.IsEmpty() ? "\r\n" : (A"; " + trivia + "\r\n");
+					string trash = trivia.IsEmpty() ? A"\r\n" : (A"; " + trivia + "\r\n");
 					section->entryList.InsertEnd(new zCOptionEntry{ "", trash });
 				}
 
@@ -56,7 +56,7 @@ namespace NAMESPACE
 			entry->ccbList.InsertEnd(&ActiveOptionBase::ChangeCallback);
 
 			inLoad = true;
-			ChangeEntry(entry->varValueTemp.Length() ? entry->varValueTemp : defaultValue, true);
+			ChangeEntry(entry->varValueTemp.Length() ? entry->varValueTemp : Z defaultValue, true);
 			inLoad = false;
 		}
 

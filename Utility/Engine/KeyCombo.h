@@ -7,6 +7,28 @@ namespace NAMESPACE
 	class KeyCombo
 	{
 	private:
+		struct zTMouseState
+		{
+			int xpos;
+			int	ypos;
+			int	zpos;
+			int buttonPressedLeft;
+			int buttonPressedMid;
+			int buttonPressedRight;
+		};
+
+		void ResetMouseState(int key) const
+		{
+			zTMouseState& mouseState = *reinterpret_cast<zTMouseState*>(ZENDEF(0x0086CCAC, 0x008B27A8, 0x008C3004, 0x008D165C));
+			
+			switch (key)
+			{
+			case MOUSE_BUTTONLEFT: mouseState.buttonPressedLeft = false; break;
+			case MOUSE_BUTTONMID: mouseState.buttonPressedMid = false; break;
+			case MOUSE_BUTTONRIGHT: mouseState.buttonPressedRight = false; break;
+			}
+		}
+
 		std::vector<std::vector<int>> combos;
 
 		void Build(const std::vector<std::vector<int>>& combos)
@@ -183,38 +205,54 @@ namespace NAMESPACE
 				return false;
 
 			for (const auto& combo : combos)
-				if (IsPressed(combo))
+			{
+				if (!IsPressed(combo))
+					continue;
+
+				bool result = true;
+				const bool win32 = dynamic_cast<zCInput_Win32*>(zinput);
+				zCArray<int>& keyBuffer = *reinterpret_cast<zCArray<int>*>(ZENDEF(0x0086D2DC, 0x008B2E00, 0x008C36F0, 0x008D1D50));
+				const bool resetModifiers = mode == TModifiersResetMode::Reset || mode == TModifiersResetMode::ResetIfAll && IsAllModifiers(combo);
+
+				for (int key : combo)
 				{
-					const bool win32 = dynamic_cast<zCInput_Win32*>(zinput);
-					zCArray<int>& keyBuffer = *reinterpret_cast<zCArray<int>*>(ZENDEF(0x0086D2DC, 0x008B2E00, 0x008C36F0, 0x008D1D50));
-					const bool resetModifiers = mode == TModifiersResetMode::Reset || mode == TModifiersResetMode::ResetIfAll && IsAllModifiers(combo);
+					if (!resetModifiers && KeyHelper::GetInstance().IsModifier(key))
+						continue;
 
-					for (int key : combo)
+					bool mouse = true;
+
+					switch (key)
 					{
-						if (!resetModifiers && KeyHelper::GetInstance().IsModifier(key))
-							continue;
+					case MOUSE_BUTTONLEFT: 
+					case MOUSE_BUTTONMID: 
+					case MOUSE_BUTTONRIGHT: 
+						break;
 
-						bool mouse = true;
-
-						switch (key)
-						{
-						case MOUSE_BUTTONLEFT: zinput->GetMouseButtonToggledLeft(); break;
-						case MOUSE_BUTTONMID: zinput->GetMouseButtonToggledMid(); break;
-						case MOUSE_BUTTONRIGHT: zinput->GetMouseButtonToggledRight(); break;
-						default: zinput->SetKey(key, false); mouse = false; break;
-						}
-
-						if (ZENDEF(mouse, false, false, false))
-							continue;
-						
-						if (win32)
-							for (int i = keyBuffer.GetNum() - 1; i >= 0; i--)
-								if (keyBuffer[i] == key)
-									keyBuffer.RemoveIndex(i);
+					default: 
+						zinput->SetKey(key, false); 
+						mouse = false; 
+						break;
 					}
 
-					return true;
+					if (win32)
+						ResetMouseState(key);
+
+					if (ZENDEF(mouse, false, false, false))
+						continue;
+
+					if (win32)
+					{
+						for (int i = keyBuffer.GetNum() - 1; i >= 0; i--)
+							if (keyBuffer[i] == key)
+								keyBuffer.RemoveOrderIndex(i);
+					}
 				}
+
+				if (!result)
+					continue;
+
+				return true;
+			}
 
 			return false;
 		}

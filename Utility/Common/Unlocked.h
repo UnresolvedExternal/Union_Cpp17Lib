@@ -49,4 +49,19 @@ public:
 	{
 		return *reinterpret_cast<T*>(unlocker.ulAddress);
 	}
+
+	int GetAddress() const
+	{
+		return reinterpret_cast<int>(unlocker.ulAddress);
+	}
+
+	int GetSize() const
+	{
+		return sizeof(T);
+	}
+
+	int GetNextAddress() const
+	{
+		return GetAddress() + GetSize();
+	}
 };

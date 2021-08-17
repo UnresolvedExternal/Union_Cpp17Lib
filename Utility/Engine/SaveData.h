@@ -56,8 +56,11 @@ namespace NAMESPACE
 		virtual void Unarchive(zCArchiver& arc) = 0;
 		virtual void Clear() = 0;
 
-		void Save(const GameEvent& event)
+		void Save(GameEvent event = GameEvent::NoEvent)
 		{
+			if (event == GameEvent::NoEvent)
+				event = Publisher::GetInstance().GetCurrentEvent();
+
 			int slot = -1;
 
 			if ((event & GameEvent::SaveEnd) && !SaveLoadGameInfo.changeLevel)
@@ -72,8 +75,11 @@ namespace NAMESPACE
 			arc->Close();
 		}
 
-		void Load(const GameEvent& event)
+		void Load(GameEvent event = GameEvent::NoEvent)
 		{
+			if (event == GameEvent::NoEvent)
+				event = Publisher::GetInstance().GetCurrentEvent();
+
 			int slot = -1;
 
 			if ((event & GameEvent::LoadBegin) && !SaveLoadGameInfo.changeLevel)
