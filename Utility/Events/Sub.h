@@ -144,7 +144,7 @@ public:
 			this->events = this->events & ~GameEvent::Execute;
 			this->delegate();
 		}
-
+		
 		if (this->events == GameEvent::NoEvent)
 			return;
 

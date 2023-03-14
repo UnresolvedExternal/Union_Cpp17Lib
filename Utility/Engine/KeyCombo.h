@@ -261,7 +261,7 @@ namespace NAMESPACE
 	std::ostream& operator<<(std::ostream& out, const KeyCombo& keyCombo)
 	{
 		if (!keyCombo.combos.size())
-			return out << "#";
+			return out << "KEY_NONE";
 
 		for (size_t i = 0; i < keyCombo.combos.size(); i++)
 		{
@@ -287,7 +287,7 @@ namespace NAMESPACE
 
 		std::vector<std::vector<int>> combos;
 
-		if (text.find('#') < text.length())
+		if (text.find("KEY_NONE") != std::string::npos)
 		{
 			combo.Build(combos);
 			return in;

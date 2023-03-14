@@ -34,25 +34,35 @@ public:
 		y.unlocker.ulOldRoot = 0u;
 	}
 
-	operator T() const
-	{
-		return *reinterpret_cast<T*>(unlocker.ulAddress);
-	}
-
 	Unlocked& operator=(const T& value)
 	{
-		Value() = value;
+		**this = value;
 		return *this;
 	}
 
-	T& Value()
+	operator T() const
 	{
-		return *reinterpret_cast<T*>(unlocker.ulAddress);
+		return *GetTypedAddress();
+	}
+
+	T& operator*()
+	{
+		return *GetTypedAddress();
+	}
+
+	T* operator->()
+	{
+		return GetTypedAddress();
 	}
 
 	int GetAddress() const
 	{
 		return reinterpret_cast<int>(unlocker.ulAddress);
+	}
+
+	T* GetTypedAddress() const
+	{
+		return reinterpret_cast<T*>(unlocker.ulAddress);
 	}
 
 	int GetSize() const

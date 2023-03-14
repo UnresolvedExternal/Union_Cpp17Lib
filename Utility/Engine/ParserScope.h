@@ -3,7 +3,7 @@ namespace NAMESPACE
 	class ParserScope
 	{
 	private:
-		zCParser* parser;
+		zCParser* const parser;
 		std::vector<VarScope<int>> symbols;
 		VarScope<zCPar_Symbol*> instance;
 		VarScope<void*> address;
@@ -17,12 +17,8 @@ namespace NAMESPACE
 				std::vector<string> names = { "SELF", "OTHER", "VICTIM", "ITEM" };
 				
 				for (const string& name : names)
-				{
-					zCPar_Symbol* symbol = parser->GetSymbol(name);
-					
-					if (symbol)
+					if (zCPar_Symbol* symbol = parser->GetSymbol(name))
 						symbols.push_back(VarScope<int>(symbol->offset));
-				}
 			}
 
 			instance = VarScope<zCPar_Symbol*>(zCPar_Symbol::instance_sym);

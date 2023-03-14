@@ -42,14 +42,16 @@ namespace NAMESPACE
 		x = view->anx(x);
 		y = view->any(y);
 
-		float width = view->FontSize(const_cast<zSTRING&>(text));
-		float height = view->FontY();
-		float vx = x - width / 2.0f;
-		float vy = y - height / 2.0f;
+		const float width = static_cast<float>(view->FontSize(const_cast<zSTRING&>(text)));
+		const float height = static_cast<float>(view->FontY());
+		
+		float vx = static_cast<float>(x) - width / 2.0f;
+		float vy = static_cast<float>(y) - height / 2.0f;
+		
 		vx = CoerceInRange<float>(vx, width, 0, 8191);
 		vy = CoerceInRange<float>(vy, height, 0, 8191);
 
-		view->Print(vx + 0.5f, vy + 0.5f, text);
+		view->Print(static_cast<int>(vx + 0.5f), static_cast<int>(vy + 0.5f), text);
 	}
 
 	bool IsLogicalPressed(unsigned short logicalId)
@@ -79,16 +81,16 @@ namespace NAMESPACE
 			y = view->any(y);
 		}
 
-		result[0] = (float)x;
-		result[1] = (float)y;
+		result[VX] = static_cast<float>(x);
+		result[VY] = static_cast<float>(y);
 		return result;
 	}
 
 	zVEC3 WorldToViewText(const zVEC3& worldPos, zCView* view, const zSTRING& text, bool coerce)
 	{
 		zVEC3 viewPos = WorldToView(worldPos, view);
-		float width = view->FontSize(const_cast<zSTRING&>(text));
-		float height = view->FontY();
+		float width = static_cast<float>(view->FontSize(const_cast<zSTRING&>(text)));
+		float height = static_cast<float>(view->FontY());
 		viewPos[0] -= width / 2;
 		viewPos[1] -= height / 2;
 

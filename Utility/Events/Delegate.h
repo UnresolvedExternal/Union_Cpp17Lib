@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <functional>
-#include <memory>
 
 template <class T>
 class Delegate
@@ -10,18 +9,18 @@ class Delegate
 private:
 	typedef std::function<T> TFunction;
 
-	std::shared_ptr<TFunction> delegate;
+	SharedPtr<TFunction> delegate;
 
 public:
 	Delegate() :
-		delegate(std::make_shared<TFunction>(nullptr))
+		delegate(MakeShared<TFunction>(nullptr))
 	{
 
 	}
 
 	template <class T>
 	Delegate(const T& function) :
-		delegate(std::make_shared<TFunction>(function))
+		delegate(MakeShared<TFunction>(function))
 	{
 
 	}
@@ -29,7 +28,7 @@ public:
 	Delegate(const Delegate&) = default;
 	Delegate(Delegate&&) = default;
 	Delegate& operator=(const Delegate&) = default;
-	Delegate& operator=(Delegate&&) = default;
+	Delegate& operator=(Delegate&& y) = default;
 
 	bool operator==(const Delegate& right) const
 	{

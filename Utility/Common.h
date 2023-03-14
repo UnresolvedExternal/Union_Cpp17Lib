@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Common/LogTrace.h"
+#include "Common/SharedPtr.h"
+
 #include "Events/Delegate.h"
 #include "Events/Publisher.h"
 #include "Events/Sub.h"

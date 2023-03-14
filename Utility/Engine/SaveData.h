@@ -79,18 +79,18 @@ namespace NAMESPACE
 		{
 			if (event == GameEvent::NoEvent)
 				event = Publisher::GetInstance().GetCurrentEvent();
-
+		
 			int slot = -1;
-
+		
 			if ((event & GameEvent::LoadBegin) && !SaveLoadGameInfo.changeLevel)
 				slot = SaveLoadGameInfo.slotID;
-
+		
 			Clear();
-			
+		
 			if (ZOwner<zCArchiver> arc{ zarcFactory->CreateArchiverRead(GetPath(slot), 0) })
 			{
-				Unarchive(*arc);
-				arc->Close();
+				Unarchive(*arc); 
+				arc->Close(); 
 			}
 		}
 
@@ -98,7 +98,7 @@ namespace NAMESPACE
 		static T& Get(const string& name)
 		{
 			static_assert(std::is_assignable_v<SaveData*&, T*>, "Type must be inherited from SaveData");
-
+			
 			if (instances.empty())
 				cleaner = { GameEvent::Exit, &SaveData::OnExit };
 
@@ -106,8 +106,9 @@ namespace NAMESPACE
 
 			if (it == instances.end())
 			{
-				auto pair = instances.insert({ name, new T(name) });
-				return static_cast<T&>(*pair.first->second);
+				T* instance = new T{ name };
+				instances.insert({ name, instance });
+				return *instance;
 			}
 			
 			return static_cast<T&>(*it->second);

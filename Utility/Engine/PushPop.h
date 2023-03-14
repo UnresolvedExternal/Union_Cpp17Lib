@@ -184,22 +184,26 @@ namespace NAMESPACE
 			static_assert(false, "Wrong type");
 	}
 
-	template <class TReturn, class... TArgs>
-	class ExternalRegistration
+	class ExternalRegistrationBase
 	{
-	private:
-		zCParser* parser;
+	protected:
+		zCParser*& parser;
 		string name;
 		int(__cdecl* func)();
-		std::vector<Sub<void>> subs;
 
-		void OnDefineExternals()
-		{
-			parser->DefineExternal(name.GetVector(), func, GetParserType<TReturn>(), GetParserType<TArgs>()..., zPAR_TYPE_VOID);
-		}
+		static std::vector<ExternalRegistrationBase*> registrations;
 
 	public:
-		ExternalRegistration(zCParser* parser, const string& name, int (__cdecl* func)()) :
+		static ActiveValue<bool> enableGameExternals;
+		static ActiveValue<bool> enableMenuExternals;
+		
+		static void TriggerAll(zCParser* currentParser)
+		{
+			for (ExternalRegistrationBase* registration : registrations)
+				registration->TryRegister(currentParser);
+		}
+
+		ExternalRegistrationBase(zCParser*& parser, const string& name, int(__cdecl* func)()) :
 			parser{ parser },
 			name{ name },
 			func{ func }
@@ -207,10 +211,59 @@ namespace NAMESPACE
 			if (!CHECK_THIS_ENGINE)
 				return;
 
-			ADDSUB(DefineExternals);
+			if (&parser == &Gothic::Parsers::Game)
+				enableGameExternals = true;
+
+			if (&parser == &Gothic::Parsers::Menu)
+				enableMenuExternals = true;
+
+			registrations += this;
+		}
+
+		virtual void TryRegister(zCParser* currentParser) = 0;
+	};
+
+	ActiveValue<bool> ExternalRegistrationBase::enableGameExternals;
+	ActiveValue<bool> ExternalRegistrationBase::enableMenuExternals;
+	std::vector<ExternalRegistrationBase*> ExternalRegistrationBase::registrations;
+
+	template <class TReturn, class... TArgs>
+	class ExternalRegistration : public ExternalRegistrationBase
+	{
+	public:
+		ExternalRegistration(zCParser*& parser, const string& name, int (__cdecl* func)()) :
+			ExternalRegistrationBase{ parser, name, func }
+		{
+
+		}
+
+		virtual void TryRegister(zCParser* currentParser) override
+		{
+			if (currentParser == parser)
+				parser->DefineExternal(name.GetVector(), func, GetParserType<TReturn>(), GetParserType<TArgs>()..., zPAR_TYPE_VOID);
 		}
 	};
 
-#define ZEXTERNAL(name, ...) ExternalRegistration<__VA_ARGS__> name ## _reg(parser, #name, &name)
-#define ZEXTERNAL_MENU(name, ...) ExternalRegistration<__VA_ARGS__> name ## _regMenu(parserMenu, #name, &name)
+	Sub registerGameExternals(ZSUB(GameEvent::DefineExternals), ExternalRegistrationBase::enableGameExternals, []
+		{
+			ExternalRegistrationBase::TriggerAll(parser);
+		});
+
+	void __cdecl Hook_zCMenu_CreateParser();
+	Hook<void(__cdecl*)(), ActiveValue<bool>> Ivk_zCMenu_CreateParser(ZENFOR(0x004CD320, 0x004DDA90, 0x004D7950, 0x004D9F10), &Hook_zCMenu_CreateParser, HookMode::Patch, ExternalRegistrationBase::enableMenuExternals);
+	void __cdecl Hook_zCMenu_CreateParser()
+	{
+		zCParser* const oldParser = parserMenu;
+
+		Ivk_zCMenu_CreateParser();
+
+		if (parserMenu == oldParser)
+			return;
+
+		ExternalRegistrationBase::TriggerAll(parserMenu);
+	}
+
+#define ZEXTERNAL(ret, name, ...) ExternalRegistration<ret, __VA_ARGS__> name ## _reg(parser, #name, &name)
+#define ZEXTERNAL_MENU(ret, name, ...) ExternalRegistration<ret, __VA_ARGS__> name ## _regMenu(parserMenu, #name, &name)
+#define ZEXTERNAL_NS(ret, name, ...) ExternalRegistration<ret, __VA_ARGS__> name ## _reg(parser, string{ PROJECT_NAME } + ":" + #name, &name);
 }

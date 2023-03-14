@@ -4,7 +4,12 @@ namespace NAMESPACE
 	template <class T> T* end(zCArray<T>& array) { return array.GetArray() + array.GetNum(); }
 	template <class T> const T* cbegin(const zCArray<T>& array) { return array.GetArray(); }
 	template <class T> const T* cend(const zCArray<T>& array) {	return array.GetArray() + array.GetNum(); }
-
+	
+	template <class T> T* begin(zCArraySort<T>& array) { return array.GetArray(); }
+	template <class T> T* end(zCArraySort<T>& array) { return array.GetArray() + array.GetNum(); }
+	template <class T> const T* cbegin(const zCArraySort<T>& array) { return array.GetArray(); }
+	template <class T> const T* cend(const zCArraySort<T>& array) { return array.GetArray() + array.GetNum(); }
+	
 	template <class T, class TList>
 	struct ListIterator
 	{
@@ -282,7 +287,7 @@ namespace NAMESPACE
 	template <class T>
 	TreeIterator<T> begin(zCTree<T>* root)
 	{
-		return TreeIterator<T>(root);
+		return TreeIterator<T>{ root };
 	}
 
 	template <class T>

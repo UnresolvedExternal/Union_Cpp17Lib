@@ -1,3 +1,4 @@
+#include "Engine/CmdExtensions.h"
 #include "Engine/Iterators.h"
 #include "Engine/VobTraverser.h"
 #include "Engine/Misc.h"
@@ -10,3 +11,4 @@
 #include "Engine/ActiveOption.h"
 #include "Engine/VectorOption.h"
 #include "Engine/FastHook.h"
+#include "Engine/StringComparer.h"
